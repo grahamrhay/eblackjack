@@ -1,0 +1,12 @@
+{application, blackjack,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { blackjack_app, []}},
+  {env, []}
+ ]}.
