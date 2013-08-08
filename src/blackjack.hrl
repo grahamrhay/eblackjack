@@ -1,0 +1,1 @@
+-record(blackjack_card, { suit, card }).
