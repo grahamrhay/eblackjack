@@ -17,6 +17,7 @@ start_link() ->
 
 init([]) ->
     process_flag(trap_exit, true),
+    random:seed(now()),
     {ok, #state{}}.
 
 handle_call(new_game, _From, State) ->
