@@ -7,7 +7,7 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(state, { deck }).
+-record(state, { deck, player_cards, dealer_cards }).
 
 start() ->
     application:start(?MODULE).
@@ -20,9 +20,17 @@ init([]) ->
     random:seed(now()),
     {ok, #state{}}.
 
-handle_call(new_game, _From, State) ->
+handle_call(new_game, _From, _State) ->
     io:format("New game!~n", []),
-    {reply, [], State};
+    Deck = blackjack_deck:new(),
+    ShuffledDeck = blackjack_deck:shuffle(Deck),
+    {Deck2,PlayerCards} = deal(ShuffledDeck, []),
+    {Deck3,DealerCards} = deal(Deck2, []),
+    {Deck4, PlayerCards2} = deal(Deck3, PlayerCards),
+    io:format("Player cards: ~p~n", [PlayerCards2]),
+    {Deck5, DealerCards2} = deal(Deck4, DealerCards),
+    io:format("Dealer cards: ~p~n", [DealerCards2]),
+    {reply, [], #state{ deck = Deck5, player_cards = PlayerCards2, dealer_cards = DealerCards2 }};
 
 handle_call(_, _From, State) ->
     {reply, [], State}.
@@ -41,3 +49,7 @@ code_change(_OldVsn, State, _Extra) ->
 
 new_game() ->
     gen_server:call(?MODULE, new_game).
+
+deal(Deck, Cards) ->
+    [NextCard | Remainder] = Deck,
+    {Remainder, [NextCard | Cards]}.
