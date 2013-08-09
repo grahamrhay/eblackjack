@@ -5,7 +5,7 @@
 -export([new/0, initial_deal/1]).
 
 new() ->
-    Cards = lists:seq(1, 13),
+    Cards = [ace] ++ lists:seq(2, 10) ++ [jack, queen, king],
     Suits = [spades, clubs, hearts, diamonds],
     Deck = lists:append(lists:map(fun(C) -> lists:map(fun(S) -> #blackjack_card{suit=S, card=C} end, Suits) end, Cards)),
     shuffle(Deck).
