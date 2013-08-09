@@ -29,10 +29,10 @@ handle_call(new_game, _From, _State) ->
     io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(PlayerCards)]),
     io:format("Dealer cards: ~p~n", [DealerCards]),
     io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(DealerCards)]),
-    {reply, [], #state{ deck = RemainderOfDeck, player_cards = PlayerCards, dealer_cards = DealerCards }};
+    {reply, ok, #state{ deck = RemainderOfDeck, player_cards = PlayerCards, dealer_cards = DealerCards }};
 
 handle_call(_, _From, State) ->
-    {reply, [], State}.
+    {reply, ok, State}.
 
 handle_cast(_Msg, N) ->
     {noreply, N}.
