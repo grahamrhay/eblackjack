@@ -18,18 +18,16 @@ start_link() ->
 init([]) ->
     process_flag(trap_exit, true),
     random:seed(now()),
-    {ok, #state{}}.
+    {ok, []}.
 
 handle_call(new_game, _From, _State) ->
     io:format("New game!~n", []),
     Deck = blackjack_deck:new(),
-    {Deck2,PlayerCards} = deal(Deck, []),
-    {Deck3,DealerCards} = deal(Deck2, []),
-    {Deck4, PlayerCards2} = deal(Deck3, PlayerCards),
-    io:format("Player cards: ~p~n", [PlayerCards2]),
-    {Deck5, DealerCards2} = deal(Deck4, DealerCards),
-    io:format("Dealer cards: ~p~n", [DealerCards2]),
-    {reply, [], #state{ deck = Deck5, player_cards = PlayerCards2, dealer_cards = DealerCards2 }};
+    io:format("Deck: ~p~n", [Deck]),
+    {RemainderOfDeck, PlayerCards, DealerCards} = blackjack_deck:initial_deal(Deck),
+    io:format("Player cards: ~p~n", [PlayerCards]),
+    io:format("Dealer cards: ~p~n", [DealerCards]),
+    {reply, [], #state{ deck = RemainderOfDeck, player_cards = PlayerCards, dealer_cards = DealerCards }};
 
 handle_call(_, _From, State) ->
     {reply, [], State}.
@@ -48,7 +46,3 @@ code_change(_OldVsn, State, _Extra) ->
 
 new_game() ->
     gen_server:call(?MODULE, new_game).
-
-deal(Deck, Cards) ->
-    [NextCard | Remainder] = Deck,
-    {Remainder, [NextCard | Cards]}.

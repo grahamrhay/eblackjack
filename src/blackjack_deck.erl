@@ -2,7 +2,7 @@
 
 -include_lib("../src/blackjack.hrl").
 
--export([new/0]).
+-export([new/0, initial_deal/1]).
 
 new() ->
     Cards = lists:seq(1, 13),
@@ -20,3 +20,13 @@ shuffle(Deck, Acc) ->
     SplitPoint = random:uniform(length(Deck)) - 1,
     {Leading, [H|T]} = lists:split(SplitPoint, Deck),
     shuffle(Leading ++ T, [H | Acc]).
+
+initial_deal(Deck) ->
+    initial_deal(Deck, [], [], 2).
+
+initial_deal(Deck, PlayerCards, DealerCards, 0) ->
+    {Deck, PlayerCards, DealerCards};
+
+initial_deal(Deck, PlayerCards, DealerCards, NumOfCards) ->
+    [Card1, Card2 | Remainder] = Deck,
+    initial_deal(Remainder, [Card1 | PlayerCards], [Card2 | DealerCards], NumOfCards - 1).
