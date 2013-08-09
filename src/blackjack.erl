@@ -23,8 +23,7 @@ init([]) ->
 handle_call(new_game, _From, _State) ->
     io:format("New game!~n", []),
     Deck = blackjack_deck:new(),
-    ShuffledDeck = blackjack_deck:shuffle(Deck),
-    {Deck2,PlayerCards} = deal(ShuffledDeck, []),
+    {Deck2,PlayerCards} = deal(Deck, []),
     {Deck3,DealerCards} = deal(Deck2, []),
     {Deck4, PlayerCards2} = deal(Deck3, PlayerCards),
     io:format("Player cards: ~p~n", [PlayerCards2]),
