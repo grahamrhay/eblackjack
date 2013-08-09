@@ -26,7 +26,9 @@ handle_call(new_game, _From, _State) ->
     io:format("Deck: ~p~n", [Deck]),
     {RemainderOfDeck, PlayerCards, DealerCards} = blackjack_deck:initial_deal(Deck),
     io:format("Player cards: ~p~n", [PlayerCards]),
+    io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(PlayerCards)]),
     io:format("Dealer cards: ~p~n", [DealerCards]),
+    io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(DealerCards)]),
     {reply, [], #state{ deck = RemainderOfDeck, player_cards = PlayerCards, dealer_cards = DealerCards }};
 
 handle_call(_, _From, State) ->
