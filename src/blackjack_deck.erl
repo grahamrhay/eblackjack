@@ -2,7 +2,7 @@
 
 -include_lib("../src/blackjack.hrl").
 
--export([new/0, initial_deal/1, possible_scores/1]).
+-export([new/0, initial_deal/1, possible_scores/1, hit/2, bust/1]).
 
 new() ->
     Cards = [ace] ++ lists:seq(2, 10) ++ [jack, queen, king],
@@ -47,3 +47,10 @@ possible_scores(Cards, Scores) ->
         Card -> lists:map(fun(S) -> S + Card end, Scores)
     end,
     possible_scores(Rest, PossibleScores).
+
+hit(Deck, Cards) ->
+    [NextCard | NewDeck] = Deck,
+    {NewDeck, [NextCard | Cards]}.
+
+bust(Cards) ->
+    lists:all(fun(Score) -> Score > 21 end, possible_scores(Cards)).

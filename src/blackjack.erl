@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 
--export([start_link/0, start/0, new_game/0]).
+-export([start_link/0, start/0, new_game/0, hit_me/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -31,6 +31,17 @@ handle_call(new_game, _From, _State) ->
     io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(DealerCards)]),
     {reply, ok, #state{ deck = RemainderOfDeck, player_cards = PlayerCards, dealer_cards = DealerCards }};
 
+handle_call(hit, _From, #state{ deck = Deck, player_cards = PlayerCards} = State) -> 
+    io:format("Hit me!~n", []),
+    {NewDeck, NewPlayerCards} = blackjack_deck:hit(Deck, PlayerCards),
+    io:format("New cards: ~p~n", [NewPlayerCards]),
+    io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(NewPlayerCards)]), 
+    NewState = State#state{deck = NewDeck, player_cards = NewPlayerCards },
+    case blackjack_deck:bust(NewPlayerCards) of
+        false -> {reply, ok, NewState};
+        true -> {reply, {error, bust}, NewState}
+    end;
+
 handle_call(_, _From, State) ->
     {reply, ok, State}.
 
@@ -48,3 +59,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 new_game() ->
     gen_server:call(?MODULE, new_game).
+
+hit_me() ->
+    gen_server:call(?MODULE, hit).
