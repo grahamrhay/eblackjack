@@ -32,14 +32,18 @@ handle_call(new_game, _From, _State) ->
     {reply, ok, #state{ deck = RemainderOfDeck, player_cards = PlayerCards, dealer_cards = DealerCards }};
 
 handle_call(hit, _From, #state{ deck = Deck, player_cards = PlayerCards} = State) -> 
-    io:format("Hit me!~n", []),
-    {NewDeck, NewPlayerCards} = blackjack_deck:hit(Deck, PlayerCards),
-    io:format("New cards: ~p~n", [NewPlayerCards]),
-    io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(NewPlayerCards)]), 
-    NewState = State#state{deck = NewDeck, player_cards = NewPlayerCards },
-    case blackjack_deck:bust(NewPlayerCards) of
-        false -> {reply, ok, NewState};
-        true -> {reply, {error, bust}, NewState}
+    case blackjack_deck:bust(PlayerCards) of
+        true -> {reply, {error, bust}, State};
+        false -> 
+            io:format("Hit me!~n", []),
+            {NewDeck, NewPlayerCards} = blackjack_deck:hit(Deck, PlayerCards),
+            io:format("New cards: ~p~n", [NewPlayerCards]),
+            io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(NewPlayerCards)]), 
+            NewState = State#state{deck = NewDeck, player_cards = NewPlayerCards },
+            case blackjack_deck:bust(NewPlayerCards) of
+                false -> {reply, ok, NewState};
+                true -> {reply, {error, bust}, NewState}
+            end
     end;
 
 handle_call(_, _From, State) ->
