@@ -6,7 +6,11 @@
 
 new_test() ->
     Deck = blackjack_deck:new(),
-    ?assertEqual(52, length(Deck)).
+    ?assertEqual(52, length(Deck)),
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= clubs end, Deck))),
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= hearts end, Deck))),
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= spades end, Deck))),
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= diamonds end, Deck))).
 
 possible_scores_test() ->
     ?assertEqual([1, 11], blackjack_deck:possible_scores([#blackjack_card { card = ace }])),
