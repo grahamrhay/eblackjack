@@ -23,7 +23,6 @@ init([]) ->
 handle_call(new_game, _From, _State) ->
     io:format("New game!~n", []),
     Deck = blackjack_deck:new(),
-    io:format("Deck: ~p~n", [Deck]),
     {RemainderOfDeck, PlayerCards, DealerCards} = blackjack_deck:initial_deal(Deck),
     io:format("Player cards: ~p~n", [PlayerCards]),
     io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(PlayerCards)]),
