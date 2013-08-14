@@ -35,3 +35,16 @@ bust_test() ->
     ?assertEqual(false, blackjack_deck:bust([?CARD(king), ?CARD(king)])), % 20
     ?assertEqual(false, blackjack_deck:bust([?CARD(ace), ?CARD(king), ?CARD(3)])), % 14, 24
     ?assertEqual(true, blackjack_deck:bust([?CARD(jack), ?CARD(jack), ?CARD(2)])). % 22
+
+dealer_plays_test() ->
+    ?assertEqual(true, blackjack_deck:dealer_plays([?CARD(king)])), % 16
+    ?assertEqual(false, blackjack_deck:dealer_plays([?CARD(8), ?CARD(9)])), % hard 17
+    ?assertEqual(false, blackjack_deck:dealer_plays([?CARD(ace), ?CARD(6)])), % soft 17
+    ?assertEqual(false, blackjack_deck:dealer_plays([?CARD(king), ?CARD(10)])). % 20
+
+winner_test() ->
+    ?assertEqual(dealer, blackjack_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(7), ?CARD(7), ?CARD(7)])), % 20 vs 21
+    ?assertEqual(player, blackjack_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(10), ?CARD(7)])), % 20 vs 17
+    ?assertEqual(push, blackjack_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(7), ?CARD(7), ?CARD(6)])), % 20 vs 20
+    ?assertEqual(dealer, blackjack_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(ace), ?CARD(7), ?CARD(3)])), % 20 vs soft 21
+    ?assertEqual(dealer, blackjack_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(ace), ?CARD(10), ?CARD(10)])). % 20 vs hard 21

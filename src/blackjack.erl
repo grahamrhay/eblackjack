@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 
--export([start_link/0, start/0, new_game/0, hit_me/0]).
+-export([start_link/0, start/0, new_game/0, hit_me/0, stick/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -46,6 +46,33 @@ handle_call(hit, _From, #state{ deck = Deck, player_cards = PlayerCards} = State
             end
     end;
 
+handle_call(stick, _From, #state{deck = Deck, player_cards = PlayerCards, dealer_cards = DealerCards} = State) -> 
+    case blackjack_deck:bust(PlayerCards) of
+        true -> {reply, {error, bust}, State};
+        false -> 
+            io:format("Sticking~n", []),
+            io:format("Dealers turn~n", []),
+            {NewDealerCards, NewDeck} = dealers_turn(DealerCards, Deck),
+            NewState = State#state { deck = NewDeck, dealer_cards = NewDealerCards },
+            case blackjack_deck:bust(NewDealerCards) of
+                true -> 
+                    io:format("Dealer bust, you win!~n", []),
+                    {reply, win, NewState};
+                false ->
+                    case blackjack_deck:winner(PlayerCards, NewDealerCards) of
+                        player ->
+                            io:format("You win!~n", []),
+                            {reply, win, NewState};
+                        dealer ->
+                            io:format("You lose :(~n", []),
+                            {reply, lose, NewState};
+                        push ->
+                            io:format("A draw!~n", []),
+                            {reply, push, NewState}
+                    end
+            end
+    end;
+
 handle_call(_, _From, State) ->
     {reply, ok, State}.
 
@@ -66,3 +93,18 @@ new_game() ->
 
 hit_me() ->
     gen_server:call(?MODULE, hit).
+
+stick() ->
+    gen_server:call(?MODULE, stick).
+
+dealers_turn(Cards, Deck) ->
+    case blackjack_deck:dealer_plays(Cards) of
+        true ->
+            io:format("Dealer hit~n", []),
+            {NewDeck, NewCards} = blackjack_deck:hit(Deck, Cards),
+            io:format("New dealer cards: ~p~n", [NewCards]),
+            io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(NewCards)]),
+            dealers_turn(NewCards, NewDeck);
+        false ->
+            {Cards, Deck}
+    end.
