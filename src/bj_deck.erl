@@ -7,7 +7,7 @@
 new() ->
     Cards = [ace] ++ lists:seq(2, 10) ++ [jack, queen, king],
     Suits = [spades, clubs, hearts, diamonds],
-    Deck = lists:append(lists:map(fun(C) -> lists:map(fun(S) -> #blackjack_card{suit=S, card=C} end, Suits) end, Cards)),
+    Deck = lists:append(lists:map(fun(C) -> lists:map(fun(S) -> #bj_card{suit=S, card=C} end, Suits) end, Cards)),
     shuffle(Deck).
 
 shuffle(Deck) ->
@@ -39,7 +39,7 @@ possible_scores([], Scores) ->
 
 possible_scores(Cards, Scores) ->
     [FirstCard | Rest] = Cards,
-    PossibleScores = case FirstCard#blackjack_card.card of
+    PossibleScores = case FirstCard#bj_card.card of
         ace -> lists:usort(lists:map(fun(S) -> S + 1 end, Scores) ++ lists:map(fun(S) -> S + 11 end, Scores));
         jack -> lists:map(fun(S) -> S + 10 end, Scores);
         queen -> lists:map(fun(S) -> S + 10 end, Scores);

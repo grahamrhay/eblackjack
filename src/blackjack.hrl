@@ -1,1 +1,1 @@
--record(blackjack_card, { suit, card }).
+-record(bj_card, { suit, card }).

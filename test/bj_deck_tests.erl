@@ -4,15 +4,15 @@
 
 -include_lib("../src/blackjack.hrl").
 
--define(CARD(Card), #blackjack_card{ card = Card }).
+-define(CARD(Card), #bj_card{ card = Card }).
 
 new_test() ->
     Deck = bj_deck:new(),
     ?assertEqual(52, length(Deck)),
-    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= clubs end, Deck))),
-    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= hearts end, Deck))),
-    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= spades end, Deck))),
-    ?assertEqual(13, length(lists:filter(fun(C) -> C#blackjack_card.suit =:= diamonds end, Deck))).
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#bj_card.suit =:= clubs end, Deck))),
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#bj_card.suit =:= hearts end, Deck))),
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#bj_card.suit =:= spades end, Deck))),
+    ?assertEqual(13, length(lists:filter(fun(C) -> C#bj_card.suit =:= diamonds end, Deck))).
 
 possible_scores_test() ->
     ?assertEqual([1, 11], bj_deck:possible_scores([?CARD(ace)])),
