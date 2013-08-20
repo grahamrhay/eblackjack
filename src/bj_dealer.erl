@@ -26,7 +26,7 @@ handle_call(shuffle, _From, State) ->
 handle_call(deal, _From, State) ->
     io:format("Dealing~n", []),
     Deck = bj_deck:new(),
-    {NewDeck, PlayerCards, DealerCards} = bj_deck:initial_deal(Deck),
+    {NewDeck, PlayerCards, DealerCards} = initial_deal(Deck),
     io:format("Player cards: ~p~n", [PlayerCards]),
     io:format("Possible scores: ~p~n", [bj_deck:possible_scores(PlayerCards)]),
     io:format("Dealer cards: ~p~n", [DealerCards]),
@@ -81,6 +81,16 @@ hit(Pid, Cards) ->
 
 play(Pid, PlayerCards) ->
     gen_server:call(Pid, {play, PlayerCards}).
+
+initial_deal(Deck) ->
+    initial_deal(Deck, [], [], 2).
+
+initial_deal(Deck, PlayerCards, DealerCards, 0) ->
+    {Deck, PlayerCards, DealerCards};
+
+initial_deal(Deck, PlayerCards, DealerCards, NumOfCards) ->
+    [Card1, Card2 | Remainder] = Deck,
+    initial_deal(Remainder, [Card1 | PlayerCards], [Card2 | DealerCards], NumOfCards - 1).
 
 dealers_turn(Cards, Deck) ->
     case bj_deck:dealer_plays(Cards) of
