@@ -2,8 +2,6 @@
 
 -behaviour(gen_server).
 
--define(SERVER, ?MODULE).
-
 -export([start_link/0, shuffle/1, deal/1, hit/2, play/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
