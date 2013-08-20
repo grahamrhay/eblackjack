@@ -1,4 +1,4 @@
--module(blackjack_deck).
+-module(bj_deck).
 
 -include_lib("../src/blackjack.hrl").
 

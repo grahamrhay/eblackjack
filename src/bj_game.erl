@@ -21,13 +21,13 @@ init([]) ->
     {ok, #state{dealer = DealerPid, cards = Cards}}.
 
 handle_call(hit, _From, #state{cards = Cards} = State) -> 
-    case blackjack_deck:bust(Cards) of
+    case bj_deck:bust(Cards) of
         true -> {reply, {error, bust}, State};
         false -> handle_hit(State)
    end;
 
 handle_call(stick, _From, #state{cards = Cards} = State) -> 
-    case blackjack_deck:bust(Cards) of
+    case bj_deck:bust(Cards) of
         true -> {reply, {error, bust}, State};
         false -> handle_stick(State)
    end.
@@ -54,9 +54,9 @@ handle_hit(#state{dealer = DealerPid, cards = Cards} = State) ->
     io:format("Hit me!~n", []),
     {ok, NewCards} = bj_dealer:hit(DealerPid, Cards),
     io:format("New cards: ~p~n", [NewCards]),
-    io:format("Possible scores: ~p~n", [blackjack_deck:possible_scores(NewCards)]), 
+    io:format("Possible scores: ~p~n", [bj_deck:possible_scores(NewCards)]), 
     NewState = State#state{cards = NewCards},
-    case blackjack_deck:bust(NewCards) of
+    case bj_deck:bust(NewCards) of
         false -> {reply, ok, NewState};
         true -> {reply, {error, bust}, NewState}
     end.
