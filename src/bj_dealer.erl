@@ -92,8 +92,11 @@ initial_deal(Deck, PlayerCards, DealerCards, NumOfCards) ->
     [Card1, Card2 | Remainder] = Deck,
     initial_deal(Remainder, [Card1 | PlayerCards], [Card2 | DealerCards], NumOfCards - 1).
 
+dealer_plays(Cards) ->
+    lists:all(fun(Score) -> Score < 17 end, bj_deck:possible_scores(Cards)).
+
 dealers_turn(Cards, Deck) ->
-    case bj_deck:dealer_plays(Cards) of
+    case dealer_plays(Cards) of
         true ->
             io:format("Dealer hit~n", []),
             {NewDeck, NewCards} = bj_deck:hit(Deck, Cards),

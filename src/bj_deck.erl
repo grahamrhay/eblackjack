@@ -2,7 +2,7 @@
 
 -include_lib("../src/blackjack.hrl").
 
--export([new/0, possible_scores/1, hit/2, bust/1, dealer_plays/1, winner/2]).
+-export([new/0, possible_scores/1, hit/2, bust/1, winner/2]).
 
 new() ->
     Cards = [ace] ++ lists:seq(2, 10) ++ [jack, queen, king],
@@ -44,9 +44,6 @@ hit(Deck, Cards) ->
 
 bust(Cards) ->
     lists:all(fun(Score) -> Score > 21 end, possible_scores(Cards)).
-
-dealer_plays(Cards) ->
-    lists:all(fun(Score) -> Score < 17 end, possible_scores(Cards)).
 
 winner(PlayerCards, DealerCards) ->
     PlayerScore = highest_valid_score(PlayerCards),

@@ -36,12 +36,6 @@ bust_test() ->
     ?assertEqual(false, bj_deck:bust([?CARD(ace), ?CARD(king), ?CARD(3)])), % 14, 24
     ?assertEqual(true, bj_deck:bust([?CARD(jack), ?CARD(jack), ?CARD(2)])). % 22
 
-dealer_plays_test() ->
-    ?assertEqual(true, bj_deck:dealer_plays([?CARD(king)])), % 16
-    ?assertEqual(false, bj_deck:dealer_plays([?CARD(8), ?CARD(9)])), % hard 17
-    ?assertEqual(false, bj_deck:dealer_plays([?CARD(ace), ?CARD(6)])), % soft 17
-    ?assertEqual(false, bj_deck:dealer_plays([?CARD(king), ?CARD(10)])). % 20
-
 winner_test() ->
     ?assertEqual(dealer, bj_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(7), ?CARD(7), ?CARD(7)])), % 20 vs 21
     ?assertEqual(player, bj_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(10), ?CARD(7)])), % 20 vs 17
