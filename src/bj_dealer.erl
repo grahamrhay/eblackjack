@@ -21,9 +21,8 @@ handle_call(shuffle, _From, State) ->
     Deck = bj_deck:new(),
     {reply, ok, State#state{deck = Deck}};
 
-handle_call(deal, _From, State) ->
-    io:format("Dealing~n", []),
-    Deck = bj_deck:new(),
+handle_call(deal, _From, #state{deck = Deck} = State) ->
+    io:format("Initial deal~n", []),
     {NewDeck, PlayerCards, DealerCards} = initial_deal(Deck),
     io:format("Player cards: ~p~n", [PlayerCards]),
     io:format("Possible scores: ~p~n", [bj_deck:possible_scores(PlayerCards)]),
@@ -43,18 +42,8 @@ handle_call({play, PlayerCards}, _From, #state{deck = Deck, cards = DealerCards}
             io:format("Dealer bust, you win!~n", []),
             {reply, win, NewState};
         false ->
-            case bj_deck:winner(PlayerCards, NewDealerCards) of
-                player ->
-                    io:format("You win!~n", []),
-                    {reply, win, NewState};
-                dealer ->
-                    io:format("You lose :(~n", []),
-                    {reply, lose, NewState};
-                push ->
-                    io:format("A draw!~n", []),
-                    {reply, push, NewState}
-            end
-    end.
+            declare_winner(PlayerCards, NewDealerCards, NewState)
+   end.
 
 handle_cast(_Msg, State) ->
     {noreply, State}.
@@ -104,3 +93,16 @@ dealers_turn(Cards, Deck) ->
         false ->
             {Cards, Deck}
     end.
+
+declare_winner(PlayerCards, DealerCards, State) ->
+    case bj_deck:winner(PlayerCards, DealerCards) of
+        player ->
+            io:format("You win!~n", []),
+            {reply, win, State};
+        dealer ->
+            io:format("You lose :(~n", []),
+            {reply, lose, State};
+        push ->
+            io:format("A draw!~n", []),
+            {reply, push, State}
+    end. 
