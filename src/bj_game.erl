@@ -4,33 +4,41 @@
 
 -define(SERVER, ?MODULE).
 
--export([start_link/0, hit/1, stick/1]).
+-export([start_link/0, bet/2, hit/1, stick/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(state, {dealer, cards}).
+-record(state, {phase, bet, dealer, cards}).
 
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
 
 init([]) ->
-    io:format("New game!~n", []),
     {ok, DealerPid} = supervisor:start_child(bj_dealer_sup, []),
-    ok = bj_dealer:shuffle(DealerPid),
-    {ok, Cards} = bj_dealer:deal(DealerPid),
-    {ok, #state{dealer = DealerPid, cards = Cards}}.
+    {ok, #state{dealer = DealerPid, phase = taking_bets}}.
 
-handle_call(hit, _From, #state{cards = Cards} = State) -> 
-    case bj_deck:bust(Cards) of
-        true -> {reply, {error, bust}, State};
-        false -> handle_hit(State)
-   end;
+handle_call({bet, Amount}, _From, #state{phase = Phase, dealer = DealerPid} = State) ->
+    case Phase of
+        taking_bets -> 
+            ok = bj_dealer:shuffle(DealerPid),
+            {ok, Cards, DealerCard} = bj_dealer:deal(DealerPid),
+            NewState = State#state{phase = players_turn, cards = Cards, bet = Amount},
+            {reply, {ok, Cards, DealerCard}, NewState};
+        _ -> 
+            {reply, {error, Phase}, State}
+    end;
 
-handle_call(stick, _From, #state{cards = Cards} = State) -> 
-    case bj_deck:bust(Cards) of
-        true -> {reply, {error, bust}, State};
-        false -> handle_stick(State)
-   end.
+handle_call(hit, _From, #state{phase = Phase} = State) -> 
+    case Phase of
+        players_turn -> handle_hit(State);
+        _ -> {reply, {error, Phase}, State}
+    end;
+
+handle_call(stick, _From, #state{phase = Phase} = State) -> 
+    case Phase of
+        players_turn -> handle_stick(State);
+        _ -> {reply, {error, Phase}, State}
+    end.
 
 handle_cast(_Msg, State) ->
     {noreply, State}.
@@ -43,6 +51,9 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+
+bet(Pid, Amount) ->
+    gen_server:call(Pid, {bet, Amount}).
 
 hit(Pid) ->
     gen_server:call(Pid, hit).
@@ -58,10 +69,18 @@ handle_hit(#state{dealer = DealerPid, cards = Cards} = State) ->
     NewState = State#state{cards = NewCards},
     case bj_deck:bust(NewCards) of
         false -> {reply, ok, NewState};
-        true -> {reply, {error, bust}, NewState}
+        true -> {reply, {error, bust}, NewState#state{phase = bust}}
     end.
 
-handle_stick(#state{dealer = DealerPid, cards = Cards} = State) ->
+handle_stick(#state{dealer = DealerPid, cards = Cards, bet = Bet} = State) ->
     io:format("Sticking~n", []),
     io:format("Dealers turn~n", []),
-    {reply, bj_dealer:play(DealerPid, Cards), State}.
+    Result = case bj_dealer:play(DealerPid, Cards) of
+        win ->
+            Winnings = Bet * 2, % TODO: blackjack!
+            {win, Winnings};
+        push -> {push, Bet};
+        lose -> lose
+    end,
+    NewState = State#state{cards = [], bet = 0, phase = taking_bets}, 
+    {reply, Result, NewState}.

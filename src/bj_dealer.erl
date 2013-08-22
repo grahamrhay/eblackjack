@@ -17,18 +17,17 @@ init([]) ->
     {ok, #state{}}.
 
 handle_call(shuffle, _From, State) ->
-    io:format("Every day I'm shuffling...~n", []),
     Deck = bj_deck:new(),
     {reply, ok, State#state{deck = Deck}};
 
 handle_call(deal, _From, #state{deck = Deck} = State) ->
-    io:format("Initial deal~n", []),
     {NewDeck, PlayerCards, DealerCards} = initial_deal(Deck),
     io:format("Player cards: ~p~n", [PlayerCards]),
     io:format("Possible scores: ~p~n", [bj_deck:possible_scores(PlayerCards)]),
     io:format("Dealer cards: ~p~n", [DealerCards]),
     io:format("Possible scores: ~p~n", [bj_deck:possible_scores(DealerCards)]), 
-    {reply, {ok, PlayerCards}, State#state{deck = NewDeck, cards = DealerCards}};
+    [_HoleCard, UpCard] = DealerCards,
+    {reply, {ok, PlayerCards, UpCard}, State#state{deck = NewDeck, cards = DealerCards}};
 
 handle_call({hit, Cards}, _From, #state{deck = Deck} = State) ->
     {NewDeck, NewCards} = bj_deck:hit(Deck, Cards),

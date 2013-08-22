@@ -15,15 +15,22 @@ initial_deal_player_cards_test() ->
     Card1 = ?CARD(1, clubs),
     Card3 = ?CARD(3, diamonds),
     Deck = [Card1, ?CARD(2, hearts), Card3, ?CARD(4, spades)],
-    {reply, {ok, PlayerCards}, _} = bj_dealer:handle_call(deal, from, {state, Deck, undefined}),
+    {reply, {ok, PlayerCards, _}, _} = bj_dealer:handle_call(deal, from, {state, Deck, undefined}),
     ?assertEqual([Card3, Card1], PlayerCards).
 
 initial_deal_dealer_cards_test() ->
     Card2 = ?CARD(2, clubs),
     Card4 = ?CARD(4, diamonds),
     Deck = [?CARD(1, hearts), Card2, ?CARD(3, spades), Card4],
-    {reply, {ok, _}, {state, _, DealerCards}} = bj_dealer:handle_call(deal, from, {state, Deck, undefined}),
+    {reply, {ok, _, _}, {state, _, DealerCards}} = bj_dealer:handle_call(deal, from, {state, Deck, undefined}),
     ?assertEqual([Card4, Card2], DealerCards).
+
+initial_deal_up_card_test() ->
+    Card2 = ?CARD(2, clubs),
+    Card4 = ?CARD(4, diamonds),
+    Deck = [?CARD(1, hearts), Card2, ?CARD(3, spades), Card4],
+    {reply, {ok, _, UpCard}, _} = bj_dealer:handle_call(deal, from, {state, Deck, undefined}),
+    ?assertEqual(Card2, UpCard).
 
 hit_test() ->
     Card = ?CARD(8, clubs),
