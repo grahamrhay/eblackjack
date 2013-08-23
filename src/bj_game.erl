@@ -8,7 +8,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(state, {phase, bet, dealer, cards}).
+-record(state, {phase = taking_bets, bet = 0, dealer, cards = []}).
 
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
@@ -69,10 +69,10 @@ handle_hit(#state{dealer = DealerPid, cards = Cards} = State) ->
     NewState = State#state{cards = NewCards},
     case bj_deck:bust(NewCards) of
         false -> {reply, ok, NewState};
-        true -> {reply, {error, bust}, NewState#state{phase = bust}}
+        true -> {reply, {error, bust}, #state{dealer = DealerPid}}
     end.
 
-handle_stick(#state{dealer = DealerPid, cards = Cards, bet = Bet} = State) ->
+handle_stick(#state{dealer = DealerPid, cards = Cards, bet = Bet}) ->
     io:format("Sticking~n", []),
     io:format("Dealers turn~n", []),
     Result = case bj_dealer:play(DealerPid, Cards) of
@@ -85,5 +85,4 @@ handle_stick(#state{dealer = DealerPid, cards = Cards, bet = Bet} = State) ->
         push -> {push, Bet}; % stake back for a draw
         lose -> lose % nothing for a loss
     end,
-    NewState = State#state{cards = [], bet = 0, phase = taking_bets}, 
-    {reply, Result, NewState}.
+    {reply, Result, #state{dealer = DealerPid}}.
