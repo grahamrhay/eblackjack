@@ -29,9 +29,9 @@ possible_scores_test() ->
 hit_test() ->
     Card = ?CARD(ace),
     Deck = [Card],
-    {NewDeck,NewCards} = bj_deck:hit(Deck, []),
+    {NewDeck,NewCard} = bj_deck:hit(Deck),
     ?assertEqual([], NewDeck),
-    ?assertEqual([Card], NewCards).
+    ?assertEqual(Card, NewCard).
 
 bust_test() ->
     ?assertEqual(false, bj_deck:bust([?CARD(ace)])), % 1

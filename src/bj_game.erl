@@ -63,8 +63,9 @@ stick(Pid) ->
 
 handle_hit(#state{dealer = DealerPid, cards = Cards} = State) ->
     io:format("Hit me!~n", []),
-    {ok, NewCards} = bj_dealer:hit(DealerPid, Cards),
-    io:format("New cards: ~p~n", [NewCards]),
+    {ok, NewCard} = bj_dealer:hit(DealerPid),
+    io:format("New card: ~p~n", [NewCard]),
+    NewCards = [NewCard | Cards],
     io:format("Possible scores: ~p~n", [bj_deck:possible_scores(NewCards)]), 
     NewState = State#state{cards = NewCards},
     case bj_deck:bust(NewCards) of

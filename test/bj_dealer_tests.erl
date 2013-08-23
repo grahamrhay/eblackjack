@@ -35,9 +35,9 @@ initial_deal_up_card_test() ->
 hit_test() ->
     Card = ?CARD(8, clubs),
     Deck = [Card],
-    {reply, {ok, Cards}, {state, NewDeck, _}} = bj_dealer:handle_call({hit, []}, from, {state, Deck, undefined}),
+    {reply, {ok, NewCard}, {state, NewDeck, _}} = bj_dealer:handle_call(hit, from, {state, Deck, undefined}),
     ?assertEqual([], NewDeck),
-    ?assertEqual([Card], Cards).
+    ?assertEqual(Card, NewCard).
 
 play_dealer_bust_test() ->
     PlayerCards = [?CARD(king, spades), ?CARD(8, hearts)],

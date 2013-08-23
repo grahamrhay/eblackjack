@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 
--export([start_link/0, shuffle/1, deal/1, hit/2, play/2]).
+-export([start_link/0, shuffle/1, deal/1, hit/1, play/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -29,9 +29,9 @@ handle_call(deal, _From, #state{deck = Deck} = State) ->
     [_HoleCard, UpCard] = DealerCards,
     {reply, {ok, PlayerCards, UpCard}, State#state{deck = NewDeck, cards = DealerCards}};
 
-handle_call({hit, Cards}, _From, #state{deck = Deck} = State) ->
-    {NewDeck, NewCards} = bj_deck:hit(Deck, Cards),
-    {reply, {ok, NewCards}, State#state{deck = NewDeck}};
+handle_call(hit, _From, #state{deck = Deck} = State) ->
+    {NewDeck, NewCard} = bj_deck:hit(Deck),
+    {reply, {ok, NewCard}, State#state{deck = NewDeck}};
 
 handle_call({play, PlayerCards}, _From, #state{deck = Deck, cards = DealerCards} = State) ->
     {NewDealerCards, NewDeck} = dealers_turn(DealerCards, Deck),
@@ -62,8 +62,8 @@ shuffle(Pid) ->
 deal(Pid) ->
     gen_server:call(Pid, deal).
 
-hit(Pid, Cards) ->
-    gen_server:call(Pid, {hit, Cards}).
+hit(Pid) ->
+    gen_server:call(Pid, hit).
 
 play(Pid, PlayerCards) ->
     gen_server:call(Pid, {play, PlayerCards}).
@@ -85,7 +85,8 @@ dealers_turn(Cards, Deck) ->
     case dealer_plays(Cards) of
         true ->
             io:format("Dealer hit~n", []),
-            {NewDeck, NewCards} = bj_deck:hit(Deck, Cards),
+            {NewDeck, NewCard} = bj_deck:hit(Deck),
+            NewCards = [NewCard | Cards],
             io:format("New dealer cards: ~p~n", [NewCards]),
             io:format("Possible scores: ~w~n", [bj_deck:possible_scores(NewCards)]),
             dealers_turn(NewCards, NewDeck);
