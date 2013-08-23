@@ -4,7 +4,7 @@
 
 -define(SERVER, ?MODULE).
 
--export([start_link/0, bet/2, hit/1, stick/1]).
+-export([start_link/0, bet/2, hit/1, stick/1, double/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -30,8 +30,20 @@ handle_call({bet, Amount}, _From, #state{phase = Phase, dealer = DealerPid} = St
 
 handle_call(hit, _From, #state{phase = Phase} = State) -> 
     case Phase of
-        players_turn -> handle_hit(State);
-        _ -> {reply, {error, Phase}, State}
+        players_turn ->
+            io:format("Hit me!~n", []),
+            hit_me(State);
+        _ ->
+            {reply, {error, Phase}, State}
+    end;
+
+handle_call(double, _From, #state{phase = Phase} = State) -> 
+    case Phase of
+        players_turn ->
+            io:format("Double down!~n", []),
+            double_down(State);
+        _ ->
+            {reply, {error, Phase}, State}
     end;
 
 handle_call(stick, _From, #state{phase = Phase} = State) -> 
@@ -61,8 +73,10 @@ hit(Pid) ->
 stick(Pid) ->
     gen_server:call(Pid, stick).
 
-handle_hit(#state{dealer = DealerPid, cards = Cards} = State) ->
-    io:format("Hit me!~n", []),
+double(Pid) ->
+    gen_server:call(Pid, double).
+
+hit_me(#state{dealer = DealerPid, cards = Cards} = State) ->
     {ok, NewCard} = bj_dealer:hit(DealerPid),
     io:format("New card: ~p~n", [NewCard]),
     NewCards = [NewCard | Cards],
@@ -71,6 +85,12 @@ handle_hit(#state{dealer = DealerPid, cards = Cards} = State) ->
     case bj_deck:bust(NewCards) of
         false -> {reply, ok, NewState};
         true -> {reply, {error, bust}, #state{dealer = DealerPid}}
+    end.
+
+double_down(#state{bet = Bet} = State) ->
+    case hit_me(State) of
+        {reply, {error, bust}, NewState} -> {reply, {error, bust}, NewState};
+        {reply, ok, NewState} -> handle_stick(NewState#state{bet = Bet * 2})
     end.
 
 handle_stick(#state{dealer = DealerPid, cards = Cards, bet = Bet}) ->
