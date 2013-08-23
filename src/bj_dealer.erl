@@ -23,9 +23,9 @@ handle_call(shuffle, _From, State) ->
 handle_call(deal, _From, #state{deck = Deck} = State) ->
     {NewDeck, PlayerCards, DealerCards} = initial_deal(Deck),
     io:format("Player cards: ~p~n", [PlayerCards]),
-    io:format("Possible scores: ~p~n", [bj_deck:possible_scores(PlayerCards)]),
+    io:format("Possible scores: ~w~n", [bj_deck:possible_scores(PlayerCards)]),
     io:format("Dealer cards: ~p~n", [DealerCards]),
-    io:format("Possible scores: ~p~n", [bj_deck:possible_scores(DealerCards)]), 
+    io:format("Possible scores: ~w~n", [bj_deck:possible_scores(DealerCards)]), 
     [_HoleCard, UpCard] = DealerCards,
     {reply, {ok, PlayerCards, UpCard}, State#state{deck = NewDeck, cards = DealerCards}};
 
@@ -87,7 +87,7 @@ dealers_turn(Cards, Deck) ->
             io:format("Dealer hit~n", []),
             {NewDeck, NewCards} = bj_deck:hit(Deck, Cards),
             io:format("New dealer cards: ~p~n", [NewCards]),
-            io:format("Possible scores: ~p~n", [bj_deck:possible_scores(NewCards)]),
+            io:format("Possible scores: ~w~n", [bj_deck:possible_scores(NewCards)]),
             dealers_turn(NewCards, NewDeck);
         false ->
             {Cards, Deck}
