@@ -2,7 +2,7 @@
 
 -include_lib("../src/blackjack.hrl").
 
--export([new/0, possible_scores/1, hit/2, bust/1, winner/2]).
+-export([new/0, possible_scores/1, hit/2, bust/1, result/2]).
 
 new() ->
     Cards = [ace] ++ lists:seq(2, 10) ++ [jack, queen, king],
@@ -22,21 +22,29 @@ shuffle(Deck, Acc) ->
     shuffle(Leading ++ T, [H | Acc]).
 
 possible_scores(Cards) ->
-    possible_scores(Cards, [0]).
+    Scores = possible_scores(Cards, [0]),
+    case Scores of
+        [11,21] when length(Cards) =:= 2 -> [blackjack];
+        _ -> Scores
+    end.
 
 possible_scores([], Scores) ->
     Scores;
 
 possible_scores(Cards, Scores) ->
     [FirstCard | Rest] = Cards,
-    PossibleScores = case FirstCard#bj_card.card of
-        ace -> lists:usort(lists:map(fun(S) -> S + 1 end, Scores) ++ lists:map(fun(S) -> S + 11 end, Scores));
-        jack -> lists:map(fun(S) -> S + 10 end, Scores);
-        queen -> lists:map(fun(S) -> S + 10 end, Scores);
-        king -> lists:map(fun(S) -> S + 10 end, Scores);
-        Card -> lists:map(fun(S) -> S + Card end, Scores)
-    end,
+    AllPossibleScores = lists:append(lists:map(fun(S) -> lists:map(fun(Val) -> Val + S end, card_values(FirstCard)) end, Scores)),
+    PossibleScores = lists:usort(AllPossibleScores), % remove any duplicate scores
     possible_scores(Rest, PossibleScores).
+
+card_values(Card) ->
+    case Card#bj_card.card of
+        ace -> [1, 11];
+        jack -> [10];
+        queen -> [10];
+        king -> [10];
+        Val -> [Val]
+    end. 
 
 hit(Deck, Cards) ->
     [NextCard | NewDeck] = Deck,
@@ -45,17 +53,33 @@ hit(Deck, Cards) ->
 bust(Cards) ->
     lists:all(fun(Score) -> Score > 21 end, possible_scores(Cards)).
 
-winner(PlayerCards, DealerCards) ->
+result(PlayerCards, DealerCards) ->
     PlayerScore = highest_valid_score(PlayerCards),
     DealerScore = highest_valid_score(DealerCards),
-    case PlayerScore > DealerScore of
-        true -> player;
-        false ->
-            case DealerScore > PlayerScore of
-                true -> dealer;
-                false -> push
+    case PlayerScore of
+        blackjack ->
+            case DealerScore of
+                blackjack -> push;
+                _ -> blackjack
+            end;
+        _ ->
+            case DealerScore of
+                blackjack -> dealer_win;
+                _ ->
+                    case PlayerScore > DealerScore of
+                        true -> player_win;
+                        false ->
+                            case DealerScore > PlayerScore of
+                                true -> dealer_win;
+                                false -> push
+                            end
+                    end
             end
     end.
 
 highest_valid_score(Cards) ->
-    lists:max(lists:filter(fun(Score) -> Score =< 21 end, possible_scores(Cards))).
+    Scores = possible_scores(Cards),
+    case Scores of
+        [blackjack] -> blackjack;
+        _ -> lists:max(lists:filter(fun(Score) -> Score =< 21 end, Scores))
+    end.

@@ -94,14 +94,9 @@ dealers_turn(Cards, Deck) ->
     end.
 
 declare_winner(PlayerCards, DealerCards, State) ->
-    case bj_deck:winner(PlayerCards, DealerCards) of
-        player ->
-            io:format("You win!~n", []),
-            {reply, win, State};
-        dealer ->
-            io:format("You lose :(~n", []),
-            {reply, lose, State};
-        push ->
-            io:format("A draw!~n", []),
-            {reply, push, State}
+    case bj_deck:result(PlayerCards, DealerCards) of
+        blackjack -> {reply, blackjack, State};
+        player_win -> {reply, win, State};
+        dealer_win -> {reply, lose, State};
+        push -> {reply, push, State}
     end. 

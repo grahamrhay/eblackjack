@@ -21,7 +21,10 @@ possible_scores_test() ->
     ?assertEqual([10], bj_deck:possible_scores([?CARD(queen)])),
     ?assertEqual([10], bj_deck:possible_scores([?CARD(king)])),
     ?assertEqual([2, 12, 22], bj_deck:possible_scores([?CARD(ace), ?CARD(ace)])),
-    ?assertEqual([19, 29], bj_deck:possible_scores([?CARD(ace), ?CARD(8), ?CARD(king)])).
+    ?assertEqual([19, 29], bj_deck:possible_scores([?CARD(ace), ?CARD(8), ?CARD(king)])),
+    ?assertEqual([blackjack], bj_deck:possible_scores([?CARD(ace), ?CARD(king)])),
+    ?assertEqual([blackjack], bj_deck:possible_scores([?CARD(10), ?CARD(ace)])),
+    ?assertEqual([11,21], bj_deck:possible_scores([?CARD(ace), ?CARD(7), ?CARD(3)])).
 
 hit_test() ->
     Card = ?CARD(ace),
@@ -36,9 +39,12 @@ bust_test() ->
     ?assertEqual(false, bj_deck:bust([?CARD(ace), ?CARD(king), ?CARD(3)])), % 14, 24
     ?assertEqual(true, bj_deck:bust([?CARD(jack), ?CARD(jack), ?CARD(2)])). % 22
 
-winner_test() ->
-    ?assertEqual(dealer, bj_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(7), ?CARD(7), ?CARD(7)])), % 20 vs 21
-    ?assertEqual(player, bj_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(10), ?CARD(7)])), % 20 vs 17
-    ?assertEqual(push, bj_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(7), ?CARD(7), ?CARD(6)])), % 20 vs 20
-    ?assertEqual(dealer, bj_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(ace), ?CARD(7), ?CARD(3)])), % 20 vs soft 21
-    ?assertEqual(dealer, bj_deck:winner([?CARD(king), ?CARD(jack)], [?CARD(ace), ?CARD(10), ?CARD(10)])). % 20 vs hard 21
+result_test() ->
+    ?assertEqual(dealer_win, bj_deck:result([?CARD(king), ?CARD(jack)], [?CARD(7), ?CARD(7), ?CARD(7)])), % 20 vs 21
+    ?assertEqual(player_win, bj_deck:result([?CARD(king), ?CARD(jack)], [?CARD(10), ?CARD(7)])), % 20 vs 17
+    ?assertEqual(push, bj_deck:result([?CARD(king), ?CARD(jack)], [?CARD(7), ?CARD(7), ?CARD(6)])), % 20 vs 20
+    ?assertEqual(dealer_win, bj_deck:result([?CARD(king), ?CARD(jack)], [?CARD(ace), ?CARD(7), ?CARD(3)])), % 20 vs soft 21
+    ?assertEqual(dealer_win, bj_deck:result([?CARD(king), ?CARD(jack)], [?CARD(ace), ?CARD(10), ?CARD(10)])), % 20 vs hard 21
+    ?assertEqual(blackjack, bj_deck:result([?CARD(king), ?CARD(ace)], [?CARD(10), ?CARD(9)])), % blackjack vs 19
+    ?assertEqual(push, bj_deck:result([?CARD(king), ?CARD(ace)], [?CARD(ace), ?CARD(10)])), % blackjack vs blackjack
+    ?assertEqual(dealer_win, bj_deck:result([?CARD(king), ?CARD(queen)], [?CARD(ace), ?CARD(10)])). % 20 vs blackjack

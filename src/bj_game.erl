@@ -76,11 +76,14 @@ handle_stick(#state{dealer = DealerPid, cards = Cards, bet = Bet} = State) ->
     io:format("Sticking~n", []),
     io:format("Dealers turn~n", []),
     Result = case bj_dealer:play(DealerPid, Cards) of
-        win ->
-            Winnings = Bet * 2, % TODO: blackjack!
+        blackjack ->
+            Winnings = Bet + (Bet * 1.5), % 3:2 for blackjack
             {win, Winnings};
-        push -> {push, Bet};
-        lose -> lose
+        win ->
+            Winnings = Bet * 2, % 2:1 for a win
+            {win, Winnings};
+        push -> {push, Bet}; % stake back for a draw
+        lose -> lose % nothing for a loss
     end,
     NewState = State#state{cards = [], bet = 0, phase = taking_bets}, 
     {reply, Result, NewState}.
